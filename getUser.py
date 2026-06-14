@@ -1,5 +1,5 @@
 import requests,json,uuid,time
-from encryptUtils import RC4Helper
+from encryptUtils import RC4Helper, RSAUtils
 from patch_captcha import get_captcha
 from urllib.parse import quote
 from loguru import logger
