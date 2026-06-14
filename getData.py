@@ -2,14 +2,14 @@ from loguru import logger
 from getUser import ZhixueUserLogin
 import requests,json
 class ZhixueWeb:
-    def __init__(self,username,password):
-        self.account = ZhixueUserLogin(username,password)
-        self.account.login()
+    def __init__(self):
+        self.account = ZhixueUserLogin("cookies.json")
         self.headers = {
             "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0",
             "Referer":"https://www.zhixue.com/htm-vessel/",
             "Host":"www.zhixue.com"
         }
+    def init(self):
         self.userToken = self.get_token()
         self.headers2 = {
             "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0",
@@ -22,14 +22,15 @@ class ZhixueWeb:
     def get_token(self):
         url = "https://www.zhixue.com/container/app/token/getToken"
         h = self.headers
-        h["Cookies"] = self.account.cookie_to_str(self.account.login_cookie)
-        result = requests.get(url,headers=h,cookies=self.account.login_cookie).json()
+        #h["Cookies"] = self.account.cookie_to_str(self.account.login_cookie)
+        print(self.account.cookies)
+        result = requests.get(url,headers=h,cookies=self.account.cookies).json()
         logger.info(json.dumps(result))
         return result["result"]
     def get_year(self):
         url = "https://ali-bg.zhixue.com/zhixuebao/base/common/academicYear"
         logger.debug(self.headers2)
-        result = requests.get(url,headers=self.headers2,cookies=self.account.login_cookie)
+        result = requests.get(url,headers=self.headers2,cookies=self.account.cookies)
         logger.info(result.text)
         return result.json()["result"]
     def get_exam(self,yi):
@@ -39,7 +40,7 @@ class ZhixueWeb:
         +"&endSchoolYear="+self.years[yi]["endTime"]
         while not end:
             logger.debug(self.headers2)
-            result = requests.get(url,headers=self.headers2,cookies=self.account.login_cookie)
+            result = requests.get(url,headers=self.headers2,cookies=self.account.cookies)
             logger.info(result.text)
             d = result.json()
             for da in d["result"]["examList"]:
@@ -54,7 +55,7 @@ class ZhixueWeb:
     def get_detail(self,eid):
         url = "https://ali-bg.zhixue.com/zhixuebao/report/exam/getReportMain?examId="+eid
         logger.debug(self.headers2)
-        result = requests.get(url,headers=self.headers2,cookies=self.account.login_cookie)
+        result = requests.get(url,headers=self.headers2,cookies=self.account.cookies)
         logger.info(result.text)
         return result.json()
     def get_answer(self,eid,pid,yi,sjc):
@@ -63,7 +64,7 @@ class ZhixueWeb:
             +"&examId="+eid\
             +"&token="+self.userToken+"&startSchoolYear="+self.years[yi]["beginTime"]\
             +"&endSchoolYear="+self.years[yi]["endTime"]
-        html = requests.get(u,headers=self.headers,cookies=self.account.login_cookie)
+        html = requests.get(u,headers=self.headers,cookies=self.account.cookies)
         html = html.text
         res = html.split("var hisQueParseDetail = ")[1].split("];")[0]+']'
         res = json.loads(res)
